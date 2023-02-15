@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
   TouchableOpacity,
   View,
+  Image,
   ImageBackground,
   Text,
   TextInput,
@@ -19,16 +20,40 @@ const initialState = {
   avatar: "",
 };
 
-export default function RegistrationScreen() {
+export default function RegistrationScreen({ navigation }) {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
+  const [hoverInputLogin, setHoverInputLogin] = useState(false);
+  const [hoverInputEmail, setHoverInputEmail] = useState(false);
+  const [hoverInputPassword, setHoverInputPassword] = useState(false);
 
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    console.log(state);
     setState(initialState);
   };
+
+  const onSubmitForm = () => {
+    setState(state);
+    keyboardHide();
+    navigation.navigate("Home", { screen: "Posts" });
+    console.log(state);
+  };
+
+  const onFocusEmail =() => {
+    setHoverInputEmail(true);
+    setIsShowKeyboard(true);
+  }
+
+  const onFocusPassword =() => {
+    setHoverInputPassword(true);
+    setIsShowKeyboard(true);
+  }
+
+  const onFocusLogin =() => {
+    setHoverInputLogin(true);
+    setIsShowKeyboard(true);
+  }
 
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
@@ -47,52 +72,69 @@ export default function RegistrationScreen() {
               }}
             >
               <View style={styles.avatar}>
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <Image
+                  source={require("../../assets/img/add.png")}
                   style={styles.avatarBtn}
-                ></TouchableOpacity>
+                />
               </View>
 
               <Text style={styles.title}>Реєстрація</Text>
               <TextInput
-                style={styles.input}
+                style={{
+                        ...styles.input,
+                        backgroundColor: hoverInputLogin ? "#FFFFFF" : "#F6F6F6",
+                        borderColor: hoverInputLogin ? "#FF6C00" : "#E8E8E8",
+                      }}
                 placeholder={"Логін"}
                 value={state.login}
-                onFocus={() => setIsShowKeyboard(true)}
                 onChangeText={(value) =>
                   setState((prevState) => ({ ...prevState, login: value }))
                 }
+                onFocus={onFocusLogin}
+                onBlur={() => setHoverInputLogin(false)}
               />
 
               <TextInput
-                style={styles.input}
+                style={{
+                  ...styles.input,
+                  backgroundColor: hoverInputEmail ? "#FFFFFF" : "#F6F6F6",
+                  borderColor: hoverInputEmail ? "#FF6C00" : "#E8E8E8",
+                }}
                 keyboardType="email-address"
                 placeholder={"Адреса електроної пошти"}
                 value={state.email}
-                onFocus={() => setIsShowKeyboard(true)}
                 onChangeText={(value) =>
                   setState((prevState) => ({ ...prevState, email: value }))
                 }
+                onFocus={onFocusEmail}
+                onBlur={() => setHoverInputEmail(false)}
               />
 
               <TextInput
-                style={styles.input}
+                style={{
+                  ...styles.input,
+                  backgroundColor: hoverInputPassword ? "#FFFFFF" : "#F6F6F6",
+                  borderColor: hoverInputPassword ? "#FF6C00" : "#E8E8E8",
+                }}
                 placeholder={"Пароль"}
                 value={state.password}
                 secureTextEntry={true}
-                onFocus={() => setIsShowKeyboard(true)}
                 onChangeText={(value) =>
                   setState((prevState) => ({ ...prevState, password: value }))
                 }
+                onFocus={onFocusPassword}
+                onBlur={() => setHoverInputPassword(false)}
               />
               <TouchableOpacity
                 activeOpacity={0.8}
                 style={styles.btn}
-                onPress={keyboardHide}
+                onPress={onSubmitForm}
               >
                 <Text style={styles.btnText}>Зареєструватися</Text>
               </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={styles.question}>Вже є акаунт? Увійти</Text>
+              </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
         </ImageBackground>
@@ -114,7 +156,7 @@ const styles = StyleSheet.create({
     color: "#212121",
     textAlign: "center",
     fontSize: 30,
-    fontWeight: "medium",
+    fontFamily: "Roboto-Medium",
     lineHeight: 35,
     letterSpacing: 0.01,
     marginBottom: 25,
@@ -170,12 +212,14 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: "#FFFFFF",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     lineHeight: 19,
   },
   question: {
     color: "#1B4371",
     textAlign: "center",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     lineHeight: 19,
   },
