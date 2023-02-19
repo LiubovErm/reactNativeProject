@@ -15,9 +15,9 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 const initialState = {
-  photo: "",
   title: "",
   location: "",
 };
@@ -56,22 +56,38 @@ export const CreatePostsScreen = ({ navigation }) => {
   const takePhoto = async () => {
     const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
-  };
-
-  const sendPost = async () => {
     let location = await Location.getCurrentPositionAsync({});
     setLocation(location);
+  };
 
+  const addFromGallery = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+    }
+  }
+
+  const sendPost = () => {
     const post = {
       title: inputState.title,
       photo: photo,
       place: inputState.location,
       location: location,
     };
- 
+
     navigation.navigate("DefaultPostsScreen", { post });
     setInputState(initialState);
     setPhoto(null);
+  };
+
+  const deletePhoto = () => {
+    setPhoto(null);
+    setInputState(initialState);
   };
 
   return (
@@ -95,6 +111,13 @@ export const CreatePostsScreen = ({ navigation }) => {
           onPress={toggleCameraType}
         >
           <Octicons name="sync" size={24} color="#F6F6F6" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.fromGallery}
+          onPress={addFromGallery}
+        >
+          <Text style={styles.fromGalleryText}>Завантажити з галереї</Text>
         </TouchableOpacity>
 
         <KeyboardAvoidingView
@@ -137,6 +160,16 @@ export const CreatePostsScreen = ({ navigation }) => {
         >
           <Text style={styles.buttonText}>Опублікувати</Text>
         </TouchableOpacity>
+        
+        <View style={styles.deleteButtonContainer}>
+          <TouchableOpacity
+              onPress={deletePhoto}
+              activeOpacity={0.8}
+              style={styles.deleteButton}
+              >
+              <Feather name="trash-2" size={24} color="#BDBDBD" />
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -145,7 +178,8 @@ export const CreatePostsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
+    
   },
   camera: {
     position: "relative",
@@ -179,9 +213,18 @@ const styles = StyleSheet.create({
     right: 35,
     opacity: 0.8,
   },
+  fromGallery: {
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  fromGalleryText: {
+    fontSize: 16,
+    lineHeight: 19,
+    color: "#BDBDBD"
+  },
   form: {
     marginHorizontal: 16,
-    marginTop: 58,
+    marginTop: 40,
   },
   input: {
     height: 50,
@@ -216,5 +259,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
     color: "#FFFFFF"
+  },
+  deleteButtonContainer: {
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginTop: "auto",
+    paddingBottom: 15,
+  },
+  deleteButton: {
+    backgroundColor: "#F6F6F6",
+    borderRadius: 20,
+    paddingLeft: 28,
+    paddingRight: 28,
+    paddingTop: 10,
+    paddingBottom: 10
   },
 });

@@ -57,7 +57,9 @@ export const DefaultPostsScreen = ({ route, navigation }) => {
                 <TouchableOpacity
                   style={{ ...styles.postComments, marginRight: 25 }}
                   activeOpacity={0.7}
-                  onPress={() => navigation.navigate("Comments")}
+                  onPress={() => navigation.navigate("Comments", {
+                    uri: item.post.photo,
+                  })}
                 >
                   <FontAwesome name="comment-o" size={24} color="#BDBDBD" />
                   <Text style={styles.numberComments}>0</Text>

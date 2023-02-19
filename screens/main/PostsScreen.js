@@ -11,6 +11,9 @@ export const PostsScreen = () => {
       <NestedScreen.Screen
         name="DefaultPostsScreen"
         component={DefaultPostsScreen}
+        options={{
+          title: "Публікаціі",
+        }}
       />
       <NestedScreen.Screen name="Comments" component={CommentsScreen} />
       <NestedScreen.Screen name="Map" component={MapScreen} />
