@@ -6,13 +6,14 @@ import { MapScreen } from "../nested/MapScreen";
 const NestedScreen = createStackNavigator();
 
 export const PostsScreen = () => {
+
   return (
     <NestedScreen.Navigator>
       <NestedScreen.Screen
         name="DefaultPostsScreen"
         component={DefaultPostsScreen}
         options={{
-          title: "Публікаціі",
+          title: "Publications",
         }}
       />
       <NestedScreen.Screen name="Comments" component={CommentsScreen} />

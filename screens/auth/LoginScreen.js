@@ -11,6 +11,8 @@ import {
   Text,
   TextInput
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { authSignInUser } from "../../redux/auth/authOperations";
 
 const initialState = {
   email: "",
@@ -24,17 +26,18 @@ export default function LoginScreen({ navigation }) {
   const [hoverInputPassword, setHoverInputPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(true);
 
+  const dispatch = useDispatch();
+
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    setState(initialState);
   };
 
   const onSubmitForm = () => {
-    setState(state);
-    keyboardHide();
-    navigation.navigate("Home", { screen: "Posts" });
-    console.log(state);
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+    dispatch(authSignInUser(state));
+    console.log(state);;
   };
 
   const onFocusEmail =() => {

@@ -12,12 +12,18 @@ import {
   Text,
   TextInput,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { authSignUpUser } from "../../redux/auth/authOperations";
+import { storage } from "../../firebase/config";
+import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons } from "@expo/vector-icons";
+import uuid from "react-native-uuid";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const initialState = {
   login: "",
   email: "",
   password: "",
-  avatar: "",
 };
 
 export default function RegistrationScreen({ navigation }) {
@@ -26,18 +32,50 @@ export default function RegistrationScreen({ navigation }) {
   const [hoverInputLogin, setHoverInputLogin] = useState(false);
   const [hoverInputEmail, setHoverInputEmail] = useState(false);
   const [hoverInputPassword, setHoverInputPassword] = useState(false);
+  const [avatar, setAvatar] = useState();
+
+  const dispatch = useDispatch();
 
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    setState(initialState);
   };
 
-  const onSubmitForm = () => {
-    setState(state);
-    keyboardHide();
-    navigation.navigate("Home", { screen: "Posts" });
+  const onSubmitForm =  async () => {
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+    const avatar = await uploadAvatarToServer();
+    dispatch(authSignUpUser({ state, avatar }));
     console.log(state);
+  };
+
+  const uploadAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
+
+  const uploadAvatarToServer = async () => {
+    const response = await fetch(avatar);
+    console.log(avatar);
+    const file = await response.blob();
+    const avatarId = uuid.v4();
+    const storageRef = ref(storage, `avatar/${avatarId}`);
+    await uploadBytes(storageRef, file);
+    const avatarUrl = await getDownloadURL(
+      ref(storage, `avatar/${avatarId}`)
+    );
+    return avatarUrl;
+  };
+
+  const deleteAvatar = async () => {
+    setAvatar(null);
   };
 
   const onFocusEmail =() => {
@@ -72,10 +110,37 @@ export default function RegistrationScreen({ navigation }) {
               }}
             >
               <View style={styles.avatar}>
-                <Image
-                  source={require("../../assets/img/add.png")}
-                  style={styles.avatarBtn}
-                />
+
+
+              <View style={{ overflow: "hidden", borderRadius: 16 }}>
+                  <ImageBackground
+                    style={styles.avatarPhoto}
+                    source={require("../../assets/img/noavatar.jpg")}
+                  >
+                    {avatar && (
+                      <Image
+                        style={styles.avatarPhoto}
+                        source={{ uri: avatar }}
+                      />
+                    )}
+                  </ImageBackground>
+              </View>
+
+                {avatar ? (
+                  <TouchableOpacity
+                    style={{ ...styles.avatarBtn, borderColor: "#BDBDBD" }}
+                    onPress={deleteAvatar}
+                  >
+                    <MaterialIcons name="close" size={24} color="#BDBDBD" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.avatarBtn}
+                    onPress={uploadAvatar}
+                  >
+                    <MaterialIcons name="add" size={24} color="#FF6C00" />
+                  </TouchableOpacity>
+                )}
               </View>
 
               <Text style={styles.title}>Реєстрація</Text>
@@ -178,6 +243,11 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 16,
     transform: [{ translateX: -50 }, { translateY: -50 }],
+  },
+  avatarPhoto: {
+    width: 120,
+    height: 120,
+    resizeMode: "cover",
   },
   avatarBtn: {
     position: "absolute",

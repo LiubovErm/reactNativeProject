@@ -10,85 +10,97 @@ import {
 } from "react-native";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import { db } from "../../firebase/config";
+import { collection, onSnapshot } from "firebase/firestore";
 
-export const DefaultPostsScreen = ({ route, navigation }) => {
+export const DefaultPostsScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
 
+  const getAllPosts = async () => {
+    await onSnapshot(collection(db, "posts"), (data) => {
+      setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  };
+
   useEffect(() => {
-    if (route.params) {
-      setPosts((prevState) => [...prevState, route.params]);
-    }
-  }, [route.params]);
+    getAllPosts();
+  }, []);
 
   return (
     <View style={styles.container}>
-  
-      <TouchableOpacity
-        style={styles.userContainer}
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate("Profile")}
-      >
-        <View style={styles.avatarContainer}>
-          <ImageBackground
-            style={styles.avatar}
-            source={require("../../assets/img/fox.jpg")}
-          ></ImageBackground>
-        </View>
-
-        <View style={styles.userInformationContainer}>
-          <Text style={styles.userName}>Liubov Yermakova</Text>
-          <Text style={styles.userEmail}>email@example.com</Text>
-        </View>
-      </TouchableOpacity>
-
+      {posts && (
       <FlatList
         data={posts}
-        keyExtractor={(item, indx) => indx.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.postsContainer}>
-              <Image
-                style={styles.postPhoto}
-                source={{ uri: item.post.photo }}
-              />
-              <Text style={styles.postTitle}>{item.post.title}</Text>
-         
-            <View style={styles.postInformationContainer}>
-              <View style={{ flexDirection: "row" }}>
+          <View>
+            <TouchableOpacity
+              style={styles.userContainer}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate("Profile")}
+            >
+              <View style={styles.avatarContainer}>
+                <ImageBackground
+                  style={styles.avatar}
+                  source={{ uri: item.avatar }}
+                ></ImageBackground>
+              </View>
+
+              <View style={styles.userInformationContainer}>
+                <Text style={styles.userName}>{item.name}</Text>
+                <Text style={styles.userEmail}>{item.email}</Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.postsContainer}>
+              <Image style={styles.postPhoto} source={{ uri: item.photo }} />
+              <Text style={styles.postTitle}>{item.title}</Text>
+
+              <View style={styles.postInformationContainer}>
+                <View style={{ flexDirection: "row" }}>
+                  <TouchableOpacity
+                    style={{ ...styles.postComments, marginRight: 25 }}
+                    activeOpacity={0.7}
+                    onPress={() =>
+                      navigation.navigate("Comments", {
+                        postId: item.id,
+                        photo: item.photo,
+                      })
+                    }
+                  >
+                    <FontAwesome name="comment-o" size={24} color={item.comments ? "#FF6C00" : "#BDBDBD"} />
+                    <Text style={{
+                        ...styles.numberComments,
+                        color: item.comments ? "#212121" : "#BDBDBD",
+                      }}>{item.comments || 0}</Text>
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
-                  style={{ ...styles.postComments, marginRight: 25 }}
+                  style={styles.postLocation}
                   activeOpacity={0.7}
-                  onPress={() => navigation.navigate("Comments", {
-                    uri: item.post.photo,
-                  })}
+                  onPress={() =>
+                    navigation.navigate("Map", {
+                      coords: {
+                        latitude: item.location.coords.latitude,
+                        longitude: item.location.coords.longitude,
+                      },
+                      place: item.place,
+                    })
+                  }
                 >
-                  <FontAwesome name="comment-o" size={24} color="#BDBDBD" />
-                  <Text style={styles.numberComments}>0</Text>
+                  <SimpleLineIcons
+                    name="location-pin"
+                    size={24}
+                    color="#BDBDBD"
+                  />
+                  <Text style={styles.locationText}>{item.place}</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={styles.postLocation}
-                activeOpacity={0.7}
-                onPress={() =>
-                  navigation.navigate("Map", {
-                    coords: {
-                      latitude: item.post.location.coords.latitude,
-                      longitude: item.post.location.coords.longitude,
-                    },
-                    place: item.post.place,
-                  })
-                }
-              >
-                <SimpleLineIcons name="location-pin" size={24} color="#BDBDBD"/>
-                <Text
-                  style={styles.locationText}
-                >
-                  {item.post.place}
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
         )}
       />
+      )}
     </View>
   );
 };
@@ -106,7 +118,7 @@ const styles = StyleSheet.create({
     marginVertical: 32,
   },
   avatarContainer: {
-    overflow: "hidden", 
+    overflow: "hidden",
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#E8E8E8",
@@ -123,13 +135,13 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Bold",
     color: "#212121",
     fontSize: 13,
-    lineHeight: 15
+    lineHeight: 15,
   },
   userEmail: {
     fontFamily: "Roboto-Regular",
     color: "rgba(33, 33, 33, 0.8)",
     fontSize: 11,
-    lineHeight: 13
+    lineHeight: 13,
   },
   postsContainer: {
     marginHorizontal: 16,
@@ -137,14 +149,14 @@ const styles = StyleSheet.create({
   postPhoto: {
     resizeMode: "cover",
     height: 240,
-    borderRadius: 8
+    borderRadius: 8,
   },
   postTitle: {
     fontFamily: "Roboto-Medium",
     color: "#212121",
     fontSize: 16,
     lineHeight: 19,
-    marginVertical: 8
+    marginVertical: 8,
   },
   postInformationContainer: {
     flexDirection: "row",
@@ -160,7 +172,7 @@ const styles = StyleSheet.create({
     color: "#BDBDBD",
     fontSize: 16,
     lineHeight: 19,
-    marginLeft: 9
+    marginLeft: 9,
   },
   postLocation: {
     flexDirection: "row",
@@ -168,10 +180,10 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontFamily: "Roboto-Regular",
+    textDecorationLine: "underline",
     color: "#212121",
     fontSize: 16,
     lineHeight: 19,
     marginLeft: 8,
-    textDecorationLine: "underline",
   },
 });

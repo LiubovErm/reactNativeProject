@@ -2,15 +2,19 @@ import { TouchableOpacity } from "react-native";
 import { PostsScreen } from "../main/PostsScreen";
 import { CreatePostsScreen } from "../main/CreatePostsScreen";
 import { ProfileScreen } from "../main/ProfileScreen";
-
-import { Entypo } from '@expo/vector-icons';
-import { AntDesign } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+import { authSignOutUser } from "../../redux/auth/authOperations";
+import { Entypo, AntDesign } from '@expo/vector-icons';
 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 const MainTab = createBottomTabNavigator();
 
-
-export const HomeScreen = ({ navigation }) => {
+export const HomeScreen = () => {
+  dispatch = useDispatch();
+  
+  const signOut = () => {
+    dispatch(authSignOutUser());
+  };
 
   return (
     <MainTab.Navigator
@@ -23,7 +27,7 @@ export const HomeScreen = ({ navigation }) => {
             <Entypo style ={{color: focused ? "#FF6C00" : "#212121"}} name="images" size={26} color={color} />
           ),
           headerRight: () => (
-            <TouchableOpacity style={{ marginRight: 20 }} onPress={() => navigation.navigate("Login")}>
+            <TouchableOpacity style={{ marginRight: 20 }} onPress={signOut}>
               <Entypo name="log-out" size={24} color="#BDBDBD" />
             </TouchableOpacity>
           ),

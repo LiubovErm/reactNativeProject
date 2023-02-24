@@ -1,13 +1,12 @@
+import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from "@react-navigation/native";
-import { useRoute } from "./router";
-import { useCallback } from 'react/cjs/react.development';
 import { useFonts } from "expo-font";
+import { useCallback } from "react/cjs/react.development";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import { Main } from "./components/Main";
 
 export default function App() {
-  const routing = useRoute(false);
-
   const [customFonts] = useFonts({
     "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
     "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
@@ -24,11 +23,10 @@ export default function App() {
     return null;
   }
 
-  return (  
-    <>
+  return (
+    <Provider store={store}>
       <StatusBar style="auto" />
-      <NavigationContainer onLayout={onLayoutRootView}>{routing}</NavigationContainer>
-    </>
+      <Main onLayout={onLayoutRootView} />
+    </Provider>
   );
 }
-

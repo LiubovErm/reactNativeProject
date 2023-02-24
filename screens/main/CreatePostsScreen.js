@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Camera, CameraType } from "expo-camera";
 import * as Location from "expo-location";
 import {
@@ -12,10 +13,12 @@ import {
   TextInput,
   Image
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { SimpleLineIcons } from "@expo/vector-icons";
-import { Octicons } from "@expo/vector-icons";
+import { Feather, SimpleLineIcons, Octicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { db, storage } from "../../firebase/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
+import uuid from "react-native-uuid";
 
 const initialState = {
   title: "",
@@ -29,6 +32,8 @@ export const CreatePostsScreen = ({ navigation }) => {
   const [location, setLocation] = useState(null);
   const [type, setType] = useState(CameraType.back);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+
+  const { userId, email, name, avatar } = useSelector((state) => state.auth);
 
   useEffect(() => {
     (async () => {
@@ -73,14 +78,8 @@ export const CreatePostsScreen = ({ navigation }) => {
   }
 
   const sendPost = () => {
-    const post = {
-      title: inputState.title,
-      photo: photo,
-      place: inputState.location,
-      location: location,
-    };
-
-    navigation.navigate("DefaultPostsScreen", { post });
+    uploadPostToServer();
+    navigation.navigate("DefaultPostsScreen");
     setInputState(initialState);
     setPhoto(null);
   };
@@ -88,6 +87,34 @@ export const CreatePostsScreen = ({ navigation }) => {
   const deletePhoto = () => {
     setPhoto(null);
     setInputState(initialState);
+  };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(photo);
+    const file = await response.blob();
+    const uniquePostId = uuid.v4();
+    const storageRef = ref(storage, `postImage/${uniquePostId}`);
+    await uploadBytes(storageRef, file);
+    const processedPhoto = await getDownloadURL(storageRef);
+    return processedPhoto;
+  };
+
+  const uploadPostToServer = async () => {
+    const photo = await uploadPhotoToServer();
+    try {
+      await addDoc(collection(db, "posts"), {
+        userId,
+        name,
+        email,
+        avatar,
+        photo,
+        title: inputState.title,
+        place: inputState.location,
+        location: location,
+      });
+    } catch (error) {
+      console.log("error", error.message);
+    }
   };
 
   return (
