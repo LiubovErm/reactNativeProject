@@ -27,3 +27,29 @@ export const db = getFirestore(app);
 
 
 
+
+// import { getApp, getApps, initializeApp } from "firebase/app";
+// import { getAuth, initializeAuth } from "firebase/auth";
+// import { getReactNativePersistence } from 'firebase/auth/react-native';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// const firebaseConfig = {
+//    ...
+// };
+
+// // Initialize Firebase
+// let app;
+// let auth;
+// if (getApps().length < 1) {
+//   app = initializeApp(firebaseConfig);
+//   auth = initializeAuth(app, {
+//     persistence: getReactNativePersistence(AsyncStorage),
+//   });
+// } else {
+//   app = getApp();
+//   auth = getAuth();
+// }
+
+// export { app, auth };
+
+

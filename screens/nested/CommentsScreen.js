@@ -3,10 +3,7 @@ import { useSelector } from "react-redux";
 import {
   View,
   StyleSheet,
-  Platform,
   Keyboard,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
   TouchableOpacity,
   FlatList,
   Image,
@@ -15,7 +12,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { db } from "../../firebase/config";
-import { collection, addDoc, doc, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
 
 export const CommentsScreen = ({ route }) => {
   const { postId, photo } = route.params;
@@ -43,6 +40,10 @@ export const CommentsScreen = ({ route }) => {
   };
 
   const sendComment = async () => {
+    const dbRef = doc(db, "posts", postId);
+      await updateDoc(dbRef, {
+        comments: allComments.length + 1,
+      });
     await addDoc(collection(doc(collection(db, "posts"), postId), "comments"), {
       comment,
       name,
@@ -50,19 +51,32 @@ export const CommentsScreen = ({ route }) => {
       avatar,
     });
     setComment("");
+    keyboardHide();
   };
 
   return (
-    <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS == "ios" ? "padding" : "height"}
-        >
           <Image source={{ uri: photo }} style={styles.photo} />
-
+          <View style={{marginBottom : 10}}>
+            <TextInput
+              style={styles.input}
+              value={comment}
+              placeholder={"Коментувати..."}
+              placeholderTextColor={"#BDBDBD"}
+              onFocus={() => setIsShowKeyboard(true)}
+              onChangeText={(value) => setComment(value)}
+            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.commentButton}
+              onPress={sendComment}
+            >
+              <Feather name="arrow-up" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={allComments}
-            keyExtractor={allComments.id}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View
                 style={{
@@ -84,33 +98,14 @@ export const CommentsScreen = ({ route }) => {
               </View>
             )}
           />
-
-          <View>
-            <TextInput
-              style={styles.input}
-              value={comment}
-              placeholder={"Коментувати..."}
-              placeholderTextColor={"#BDBDBD"}
-              onFocus={() => setIsShowKeyboard(true)}
-              onChangeText={(value) => setComment(value)}
-            />
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.commentButton}
-              onPress={sendComment}
-            >
-              <Feather name="arrow-up" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
       </View>
-    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "space-between",
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingTop: 32,
@@ -144,13 +139,14 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   wrapper: {
+    justifyContent: "center",
     alignItems: "center",
   },
   commentContainer: {
     backgroundColor: "rgba(0, 0, 0, 0.03)",
     width: 299,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 10,
     borderRadius: 6,
   },
   avatar: {

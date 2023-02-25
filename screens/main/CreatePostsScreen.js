@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: "center", 
     height: 240,
     marginHorizontal: 16,
-    marginTop: 32,
+    marginTop: 24,
   },
   photoContainer: {
     position: "absolute",
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   form: {
     marginHorizontal: 16,
-    marginTop: 40,
+    marginTop: 28,
   },
   input: {
     height: 50,

@@ -17,7 +17,7 @@ export const DefaultPostsScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
 
   const getAllPosts = async () => {
-    await onSnapshot(collection(db, "posts"), (data) => {
+    onSnapshot(collection(db, "posts"), (data) => {
       setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     });
   };
@@ -34,10 +34,8 @@ export const DefaultPostsScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View>
-            <TouchableOpacity
+            <View
               style={styles.userContainer}
-              activeOpacity={0.7}
-              onPress={() => navigation.navigate("Profile")}
             >
               <View style={styles.avatarContainer}>
                 <ImageBackground
@@ -50,7 +48,7 @@ export const DefaultPostsScreen = ({ navigation }) => {
                 <Text style={styles.userName}>{item.name}</Text>
                 <Text style={styles.userEmail}>{item.email}</Text>
               </View>
-            </TouchableOpacity>
+            </View>
 
             <View style={styles.postsContainer}>
               <Image style={styles.postPhoto} source={{ uri: item.photo }} />
@@ -115,7 +113,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 16,
     marginHorizontal: 16,
-    marginVertical: 32,
+    marginVertical: 16,
   },
   avatarContainer: {
     overflow: "hidden",
